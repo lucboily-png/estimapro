@@ -1,3 +1,8 @@
+git init
+git add .
+git commit -m "Initial commit - formulaire soumission auto"
+
+
 {
   "name": "soumission-garagiste",
   "version": "0.1.0",
