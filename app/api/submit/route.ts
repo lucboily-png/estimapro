@@ -3,142 +3,139 @@ import { Resend } from 'resend'
 import garages from '@/data/garages.json'
 
 export async function POST(req: Request) {
-
-  // 🔍 LOG DE VALIDATION (TEMPORAIRE)
-  console.log(
-    'RESEND_API_KEY présente:',
-    !!process.env.RESEND_API_KEY
-  )
-
   try {
-    const data = await req.json()
-	
-	console.log('🧪 DATA REÇU :', data)
-console.log('📧 EMAIL CLIENT :', data.email)
-
-
-    // ✅ Instanciation ici (runtime)
-    const resend = new Resend(process.env.RESEND_API_KEY)
-
+    // Vérification clé Resend
     if (!process.env.RESEND_API_KEY) {
-      console.error('❌ RESEND_API_KEY manquante')
       return NextResponse.json(
         { success: false, message: 'Configuration email manquante' },
         { status: 500 }
       )
     }
 
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    const data = await req.json()
+
+    // Validation minimale
+    if (!data.email || !data.postalCode) {
+      return NextResponse.json(
+        { success: false, message: 'Données invalides' },
+        { status: 400 }
+      )
+    }
+
+    // Normalisation du code postal
     const postalCode = data.postalCode.replace(/\s/g, '').toUpperCase()
 
+    // Recherche garages
     const matchedGarages = garages.filter(g =>
       g.postalCodes
         .map(pc => pc.replace(/\s/g, '').toUpperCase())
         .includes(postalCode)
     )
 
+    // Aucun garage trouvé
     if (matchedGarages.length === 0) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "Désolé, nous n'avons trouvé aucun garage près de chez-vous avec ce code postal.",
+            "Désolé, nous n'avons trouvé aucun garage près de chez-vous.",
         },
         { status: 404 }
       )
     }
 
+    /* =========================
+       EMAIL GARAGE
+    ========================= */
+
+    const garageEmailHTML = `
+      <div style="font-family:Arial,sans-serif;background:#f4f6f8;padding:24px">
+        <div style="max-width:600px;margin:auto;background:#ffffff;border-radius:8px;overflow:hidden">
+          <div style="background:#0f172a;color:#ffffff;padding:20px">
+            <h2 style="margin:0">Nouvelle demande de soumission</h2>
+          </div>
+          <div style="padding:20px;color:#111827">
+            <p><strong>Nom :</strong> ${data.firstName} ${data.lastName}</p>
+            <p><strong>Email :</strong> ${data.email}</p>
+            <p><strong>Téléphone :</strong> ${data.phone}</p>
+            <p><strong>Code postal :</strong> ${postalCode}</p>
+
+            <hr style="margin:16px 0" />
+
+            <p><strong>Véhicule :</strong><br>
+              ${data.year} ${data.brand} ${data.model}
+            </p>
+
+            <p><strong>Service demandé :</strong><br>
+              ${data.serviceType}
+            </p>
+
+            <p><strong>Délai :</strong><br>
+              ${data.urgency}
+            </p>
+
+            <p><strong>Description :</strong><br>
+              ${data.description || '—'}
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+
+    // Envoi aux garages
     for (const garage of matchedGarages) {
       await resend.emails.send({
-  from: 'Soumissions Auto <onboarding@resend.dev>',
-  to: garage.email,
-  subject: `🛠️ Nouvelle demande de soumission – ${data.brand} ${data.model} ${data.year}`,
-  html: `
-  <div style="font-family:Arial,sans-serif;background:#f4f6f8;padding:24px">
-    <div style="max-width:600px;margin:auto;background:#ffffff;border-radius:8px;overflow:hidden">
-
-      <div style="background:#0f172a;color:#ffffff;padding:20px">
-        <h2 style="margin:0">Nouvelle demande de soumission</h2>
-        <p style="margin:4px 0 0;font-size:14px;color:#c7d2fe">
-          Soumissions Auto
-        </p>
-      </div>
-
-      <div style="padding:20px;color:#111827">
-
-        <h3>👤 Client</h3>
-        <p>
-          <strong>Nom :</strong> ${data.firstName} ${data.lastName}<br/>
-          <strong>Email :</strong> ${data.email}<br/>
-          <strong>Téléphone :</strong> ${data.phone}<br/>
-          <strong>Contact préféré :</strong> ${data.contactPreference}<br/>
-          <strong>Code postal :</strong> ${data.postalCode}
-        </p>
-
-        <hr/>
-
-        <h3>🚗 Véhicule</h3>
-        <p>
-          ${data.brand} ${data.model} (${data.year})
-        </p>
-
-        <hr/>
-
-        <h3>🔧 Service demandé</h3>
-        <p>
-          <strong>Type :</strong> ${data.serviceType}<br/>
-          <strong>Délai :</strong> ${data.urgency || 'Non précisé'}
-        </p>
-
-        <p style="margin-top:12px">
-          <strong>Description :</strong><br/>
-          ${data.description}
-        </p>
-
-      </div>
-
-    </div>
-  </div>
-  `,
-})
-
+        from: 'Soumissions Auto <onboarding@resend.dev>',
+        to: garage.email,
+        subject: `🛠️ Nouvelle demande de soumission – ${data.brand} ${data.model} ${data.year}`,
+        html: garageEmailHTML,
+      })
     }
 
-// 📩 EMAIL DE CONFIRMATION CLIENT
-await resend.emails.send({
-  from: 'Soumissions Auto <onboarding@resend.dev>', // temporaire
-  to: data.email,
-  subject: 'Nous avons bien reçu votre demande de soumission 🚗',
-  html: `
-    <div style="font-family:Arial,sans-serif;background:#f4f6f8;padding:30px;">
-      <div style="max-width:600px;margin:auto;background:#ffffff;border-radius:8px;padding:24px;">
-        <h2 style="color:#0f172a;">Merci pour votre demande 🙌</h2>
+    /* =========================
+       EMAIL CLIENT
+    ========================= */
 
-        <p>Bonjour ${data.firstName},</p>
+    const clientEmailHTML = `
+      <div style="font-family:Arial,sans-serif;background:#f4f6f8;padding:24px">
+        <div style="max-width:600px;margin:auto;background:#ffffff;border-radius:8px;overflow:hidden">
+          <div style="background:#2563eb;color:#ffffff;padding:20px">
+            <h2 style="margin:0">Demande envoyée avec succès</h2>
+          </div>
+          <div style="padding:20px;color:#111827">
+            <p>Bonjour ${data.firstName},</p>
 
-        <p>
-          Nous avons bien reçu votre demande de soumission pour votre
-          <strong>${data.year} ${data.brand} ${data.model}</strong>.
-        </p>
+            <p>
+              Votre demande de soumission a bien été transmise à des garages
+              près de chez vous.
+            </p>
 
-        <p>
-          Des garages près de chez vous vous contacteront sous peu.
-        </p>
+            <p>
+              Un professionnel communiquera avec vous sous peu selon votre
+              préférence de contact.
+            </p>
 
-        <hr style="margin:24px 0" />
+            <hr style="margin:16px 0" />
 
-        <p style="font-size:14px;color:#64748b;">
-          Ce message est envoyé automatiquement.  
-          Merci de ne pas y répondre.
-        </p>
+            <p style="font-size:14px;color:#6b7280">
+              Soumissions Auto – Mise en relation avec des garages locaux.
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
-  `,
-})
+    `
 
+    await resend.emails.send({
+      from: 'Soumissions Auto <onboarding@resend.dev>',
+      to: data.email,
+      subject: 'Confirmation de votre demande de soumission',
+      html: clientEmailHTML,
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('🔥 ERREUR API SUBMIT :', error)
+    console.error('Erreur API submit:', error)
     return NextResponse.json(
       { success: false, message: 'Erreur serveur' },
       { status: 500 }
