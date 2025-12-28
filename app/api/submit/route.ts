@@ -12,6 +12,10 @@ export async function POST(req: Request) {
 
   try {
     const data = await req.json()
+	
+	console.log('🧪 DATA REÇU :', data)
+console.log('📧 EMAIL CLIENT :', data.email)
+
 
     // ✅ Instanciation ici (runtime)
     const resend = new Resend(process.env.RESEND_API_KEY)
