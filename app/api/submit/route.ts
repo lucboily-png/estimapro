@@ -96,7 +96,7 @@ export async function POST(req: Request) {
   </div>
   `,
 })
-)
+
     }
 
     return NextResponse.json({ success: true })
