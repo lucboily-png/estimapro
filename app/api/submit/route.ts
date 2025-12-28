@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         {
           success: false,
           message:
-            "Désolé, nous n'avons trouvé aucun garage près de chez-vous.",
+            "Désolé, nous n'avons trouvé aucun garage près de chez-vous avec ce code postal.",
         },
         { status: 404 }
       )
@@ -98,6 +98,39 @@ export async function POST(req: Request) {
 })
 
     }
+
+// 📩 EMAIL DE CONFIRMATION CLIENT
+await resend.emails.send({
+  from: 'Soumissions Auto <onboarding@resend.dev>', // temporaire
+  to: data.email,
+  subject: 'Nous avons bien reçu votre demande de soumission 🚗',
+  html: `
+    <div style="font-family:Arial,sans-serif;background:#f4f6f8;padding:30px;">
+      <div style="max-width:600px;margin:auto;background:#ffffff;border-radius:8px;padding:24px;">
+        <h2 style="color:#0f172a;">Merci pour votre demande 🙌</h2>
+
+        <p>Bonjour ${data.firstName},</p>
+
+        <p>
+          Nous avons bien reçu votre demande de soumission pour votre
+          <strong>${data.year} ${data.brand} ${data.model}</strong>.
+        </p>
+
+        <p>
+          Des garages près de chez vous vous contacteront sous peu.
+        </p>
+
+        <hr style="margin:24px 0" />
+
+        <p style="font-size:14px;color:#64748b;">
+          Ce message est envoyé automatiquement.  
+          Merci de ne pas y répondre.
+        </p>
+      </div>
+    </div>
+  `,
+})
+
 
     return NextResponse.json({ success: true })
   } catch (error) {
