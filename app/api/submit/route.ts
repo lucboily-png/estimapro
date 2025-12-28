@@ -45,11 +45,58 @@ export async function POST(req: Request) {
 
     for (const garage of matchedGarages) {
       await resend.emails.send({
-        from: 'Soumissions Auto <onboarding@resend.dev>',
-        to: garage.email,
-        subject: `Nouvelle demande – ${data.brand} ${data.model} ${data.year}`,
-        html: `<p>Nouvelle demande reçue</p>`,
-      })
+  from: 'Soumissions Auto <onboarding@resend.dev>',
+  to: garage.email,
+  subject: `🛠️ Nouvelle demande de soumission – ${data.brand} ${data.model} ${data.year}`,
+  html: `
+  <div style="font-family:Arial,sans-serif;background:#f4f6f8;padding:24px">
+    <div style="max-width:600px;margin:auto;background:#ffffff;border-radius:8px;overflow:hidden">
+
+      <div style="background:#0f172a;color:#ffffff;padding:20px">
+        <h2 style="margin:0">Nouvelle demande de soumission</h2>
+        <p style="margin:4px 0 0;font-size:14px;color:#c7d2fe">
+          Soumissions Auto
+        </p>
+      </div>
+
+      <div style="padding:20px;color:#111827">
+
+        <h3>👤 Client</h3>
+        <p>
+          <strong>Nom :</strong> ${data.firstName} ${data.lastName}<br/>
+          <strong>Email :</strong> ${data.email}<br/>
+          <strong>Téléphone :</strong> ${data.phone}<br/>
+          <strong>Contact préféré :</strong> ${data.contactPreference}<br/>
+          <strong>Code postal :</strong> ${data.postalCode}
+        </p>
+
+        <hr/>
+
+        <h3>🚗 Véhicule</h3>
+        <p>
+          ${data.brand} ${data.model} (${data.year})
+        </p>
+
+        <hr/>
+
+        <h3>🔧 Service demandé</h3>
+        <p>
+          <strong>Type :</strong> ${data.serviceType}<br/>
+          <strong>Délai :</strong> ${data.urgency || 'Non précisé'}
+        </p>
+
+        <p style="margin-top:12px">
+          <strong>Description :</strong><br/>
+          ${data.description}
+        </p>
+
+      </div>
+
+    </div>
+  </div>
+  `,
+})
+)
     }
 
     return NextResponse.json({ success: true })
