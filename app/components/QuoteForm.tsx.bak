@@ -87,7 +87,7 @@ export default function QuoteForm() {
   </h1>
 
   <p className="text-gray-600 mt-2">
-    Recevez rapidement des soumissions de garages près de chez vous
+    Recevez rapidement des soumissions de garages près de chez vous pour effectuer vos réparations automobiles.
   </p>
 </div>
 
