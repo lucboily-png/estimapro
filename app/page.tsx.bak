@@ -1,16 +1,13 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-export default function HomePage() {
+export default function Home() {
   const headersList = headers()
-  const acceptLanguage = headersList.get('accept-language') || ''
+  const lang = headersList.get('accept-language') || ''
 
-  // Détection simple de la langue
-  const isFrench = acceptLanguage.toLowerCase().startsWith('fr')
-
-  if (isFrench) {
+  if (lang.startsWith('fr')) {
     redirect('/fr')
-  } else {
-    redirect('/en')
   }
+
+  redirect('/en')
 }
