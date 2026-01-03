@@ -81,3 +81,10 @@ body {
 .input::placeholder {
   color: #9ca3af;
 }
+
+.input {
+  @apply w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900
+         placeholder-gray-400 shadow-sm
+         focus:border-blue-500 focus:ring-2 focus:ring-blue-200
+         transition;
+}
