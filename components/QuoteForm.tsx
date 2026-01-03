@@ -4,19 +4,14 @@ import { useState } from 'react'
 
 type Lang = 'fr' | 'en'
 
-export default function QuoteForm({ lang = 'fr' }: { lang?: Lang }) {
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
-
-  /* =========================
-     TEXTES FR / EN
-  ========================= */
-  const t = {
-    fr: {
-      title: 'Demande de soumission auto',
-      submit: 'Envoyer la demande',
-      success: 'Votre demande a été envoyée avec succès.',
-      error: 'Une erreur est survenue. Veuillez réessayer.',
+const TEXT = {
+  fr: {
+    title: 'Demande de soumission automobile',
+    subtitle: 'Recevez rapidement une estimation de garages près de chez vous',
+    submit: 'Envoyer la demande',
+    success: '✅ Votre demande a été envoyée avec succès.',
+    error: '❌ Une erreur est survenue. Veuillez réessayer.',
+    fields: {
       firstName: 'Prénom',
       lastName: 'Nom',
       email: 'Courriel',
@@ -25,15 +20,18 @@ export default function QuoteForm({ lang = 'fr' }: { lang?: Lang }) {
       brand: 'Marque',
       model: 'Modèle',
       year: 'Année',
-      serviceType: 'Service demandé',
-      urgency: 'Urgence',
+      service: 'Service demandé',
+      urgency: 'Délai',
       description: 'Description du problème',
     },
-    en: {
-      title: 'Auto Repair Quote Request',
-      submit: 'Submit Request',
-      success: 'Your request has been sent successfully.',
-      error: 'An error occurred. Please try again.',
+  },
+  en: {
+    title: 'Auto Repair Quote Request',
+    subtitle: 'Get estimates from nearby auto repair shops',
+    submit: 'Submit request',
+    success: '✅ Your request has been sent successfully.',
+    error: '❌ An error occurred. Please try again.',
+    fields: {
       firstName: 'First name',
       lastName: 'Last name',
       email: 'Email',
@@ -42,22 +40,24 @@ export default function QuoteForm({ lang = 'fr' }: { lang?: Lang }) {
       brand: 'Brand',
       model: 'Model',
       year: 'Year',
-      serviceType: 'Requested service',
+      service: 'Requested service',
       urgency: 'Urgency',
       description: 'Problem description',
     },
-  }[lang]
+  },
+}
 
-  /* =========================
-     SUBMIT
-  ========================= */
+export default function QuoteForm({ lang = 'fr' }: { lang?: Lang }) {
+  const t = TEXT[lang]
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
     setMessage(null)
 
     const form = e.currentTarget
-
     const formData = {
       firstName: (form.firstName as HTMLInputElement).value,
       lastName: (form.lastName as HTMLInputElement).value,
@@ -80,64 +80,75 @@ export default function QuoteForm({ lang = 'fr' }: { lang?: Lang }) {
         body: JSON.stringify(formData),
       })
 
-      if (!res.ok) throw new Error('Server error')
+      if (!res.ok) throw new Error('error')
 
       setMessage(t.success)
       form.reset()
-    } catch (err) {
+    } catch {
       setMessage(t.error)
     } finally {
       setLoading(false)
     }
   }
 
-  /* =========================
-     UI
-  ========================= */
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <h1 className="text-2xl font-bold text-center mb-6">{t.title}</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input name="firstName" placeholder={t.firstName} required />
-        <input name="lastName" placeholder={t.lastName} required />
-        <input name="email" type="email" placeholder={t.email} required />
-        <input name="phone" placeholder={t.phone} required />
-        <input name="postalCode" placeholder={t.postalCode} required />
-        <input name="brand" placeholder={t.brand} required />
-        <input name="model" placeholder={t.model} required />
-        <input name="year" placeholder={t.year} required />
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6"
+    >
+      {/* TITRE */}
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-slate-900">
+          {t.title}
+        </h1>
+        <p className="mt-2 text-slate-600">
+          {t.subtitle}
+        </p>
       </div>
 
-      <select name="serviceType" required>
-        <option value="">{t.serviceType}</option>
-        <option value="estimate">Estimate</option>
-        <option value="repair">Repair</option>
+      {/* GRILLE */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input name="firstName" required placeholder={t.fields.firstName} className="input" />
+        <input name="lastName" required placeholder={t.fields.lastName} className="input" />
+        <input name="email" type="email" required placeholder={t.fields.email} className="input" />
+        <input name="phone" required placeholder={t.fields.phone} className="input" />
+        <input name="postalCode" required placeholder={t.fields.postalCode} className="input" />
+        <input name="brand" required placeholder={t.fields.brand} className="input" />
+        <input name="model" required placeholder={t.fields.model} className="input" />
+        <input name="year" required placeholder={t.fields.year} className="input" />
+      </div>
+
+      <select name="serviceType" required className="input">
+        <option value="">{t.fields.service}</option>
+        <option>Carrosserie</option>
+        <option>Mécanique</option>
+        <option>Peinture</option>
+        <option>Autre</option>
       </select>
 
-      <select name="urgency" required>
-        <option value="">{t.urgency}</option>
-        <option value="normal">Normal</option>
-        <option value="urgent">Urgent</option>
+      <select name="urgency" required className="input">
+        <option value="">{t.fields.urgency}</option>
+        <option>Urgent</option>
+        <option>1-3 jours</option>
+        <option>Flexible</option>
       </select>
 
       <textarea
         name="description"
-        placeholder={t.description}
         rows={4}
-        required
+        placeholder={t.fields.description}
+        className="input"
       />
 
       <button
-        type="submit"
         disabled={loading}
-        className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition"
+        className="w-full rounded-xl bg-slate-900 text-white py-3 font-semibold hover:bg-slate-800 transition"
       >
         {loading ? '...' : t.submit}
       </button>
 
       {message && (
-        <p className="text-center text-sm mt-2">{message}</p>
+        <p className="text-center font-medium">{message}</p>
       )}
     </form>
   )
