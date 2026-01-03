@@ -7,9 +7,9 @@ type Props = {
 const texts = {
   fr: {
     title: 'Demande de soumission automobile',
-    subtitle: 'Obtenez rapidement une estimation d’un garage près de chez vous',
-    vehicle: 'Véhicule',
+    subtitle: 'Recevez rapidement une estimation d’un garage près de chez vous',
     contact: 'Coordonnées',
+    vehicle: 'Informations du véhicule',
     submit: 'Envoyer la demande',
     fields: {
       firstName: 'Prénom',
@@ -34,8 +34,8 @@ const texts = {
   en: {
     title: 'Auto repair quote request',
     subtitle: 'Get a fast estimate from a nearby garage',
-    vehicle: 'Vehicle',
-    contact: 'Contact information',
+    contact: 'Contact details',
+    vehicle: 'Vehicle information',
     submit: 'Submit request',
     fields: {
       firstName: 'First name',
@@ -63,79 +63,77 @@ export default function QuoteForm({ lang }: Props) {
   const t = texts[lang]
 
   return (
-    <form className="space-y-8">
-      {/* HEADER */}
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
-        <p className="text-gray-500 mt-2">{t.subtitle}</p>
-      </div>
+    <div className="form-card">
+      <form className="space-y-10">
+        {/* HEADER */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900">
+            {t.title}
+          </h1>
+          <p className="text-gray-500 mt-2">
+            {t.subtitle}
+          </p>
+        </div>
 
-      {/* CONTACT */}
-      <section>
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          {t.contact}
-        </h2>
+        {/* CONTACT */}
+        <section>
+          <h2 className="form-section-title">{t.contact}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input className="input" placeholder={t.fields.firstName} />
+            <input className="input" placeholder={t.fields.lastName} />
+            <input className="input" placeholder={t.fields.email} />
+            <input className="input" placeholder={t.fields.phone} />
+            <select className="input">
+              <option>{t.fields.preferred}</option>
+              {t.options.preferred.map(o => (
+                <option key={o}>{o}</option>
+              ))}
+            </select>
+            <input className="input" placeholder={t.fields.postal} />
+          </div>
+        </section>
 
+        {/* VEHICLE */}
+        <section>
+          <h2 className="form-section-title">{t.vehicle}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input className="input" placeholder={t.fields.brand} />
+            <input className="input" placeholder={t.fields.model} />
+            <input className="input" placeholder={t.fields.year} />
+          </div>
+
+          <textarea
+            className="input mt-4 h-32 resize-none"
+            placeholder={t.fields.issue}
+          />
+        </section>
+
+        {/* SERVICE */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input className="input" placeholder={t.fields.firstName} />
-          <input className="input" placeholder={t.fields.lastName} />
-          <input className="input" placeholder={t.fields.email} />
-          <input className="input" placeholder={t.fields.phone} />
-
           <select className="input">
-            <option>{t.fields.preferred}</option>
-            {t.options.preferred.map(o => (
+            <option>{t.fields.service}</option>
+            {t.options.service.map(o => (
               <option key={o}>{o}</option>
             ))}
           </select>
-
-          <input className="input" placeholder={t.fields.postal} />
-        </div>
-      </section>
-
-      {/* VEHICLE */}
-      <section>
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          {t.vehicle}
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input className="input" placeholder={t.fields.brand} />
-          <input className="input" placeholder={t.fields.model} />
-          <input className="input" placeholder={t.fields.year} />
+          <select className="input">
+            <option>{t.fields.urgency}</option>
+            {t.options.urgency.map(o => (
+              <option key={o}>{o}</option>
+            ))}
+          </select>
         </div>
 
-        <textarea
-          className="input mt-4 h-28 resize-none"
-          placeholder={t.fields.issue}
-        />
-      </section>
-
-      {/* SERVICE */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <select className="input">
-          <option>{t.fields.service}</option>
-          {t.options.service.map(o => (
-            <option key={o}>{o}</option>
-          ))}
-        </select>
-
-        <select className="input">
-          <option>{t.fields.urgency}</option>
-          {t.options.urgency.map(o => (
-            <option key={o}>{o}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* SUBMIT */}
-      <button
-        type="submit"
-        className="w-full bg-blue-600 text-white py-4 rounded-xl
-                   font-semibold text-lg hover:bg-blue-700 transition"
-      >
-        {t.submit}
-      </button>
-    </form>
+        {/* SUBMIT */}
+        <button
+          type="submit"
+          className="w-full bg-blue-600 hover:bg-blue-700
+                     text-white text-lg font-semibold
+                     py-4 rounded-2xl transition"
+        >
+          {t.submit}
+        </button>
+      </form>
+    </div>
   )
 }
